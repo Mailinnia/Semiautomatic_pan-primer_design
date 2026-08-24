@@ -18,8 +18,8 @@ was developed and evaluated using _Orthoflavivirus_ and _Alphavirus_ as proof-of
   - [Primer design with varVAMP](#design_)
     - [Primer prediction](#pred_)
       - [Local BLAST databases](#blast_)
-  - [Citation](#cite_)
-  - [Disclaimer](#disc_)
+- [Citation](#cite_)
+- [Disclaimer](#disc_)
 
 
 # <a name="overview_"></a> Workflow overview
