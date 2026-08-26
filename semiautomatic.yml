@@ -1,0 +1,32 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.12
+  - r-base=4.3
+  - mafft=7.526
+  - varvamp=1.3
+  - seqkit=2.8.2
+  - cd-hit=4.8.1
+  - vsearch=2.29.1
+  - mash=2.3
+  - vclust=1.3.1
+  - krona=2.8.1
+  - blast=2.16.0
+  - r-argparse=2.2.3
+  - r-cowplot=1.2.0
+  - r-dt=0.33
+  - r-jsonlite=1.8.9
+  - r-patchwork=1.3.2
+  - r-plotly=4.10.4
+  - r-randomcolor=1.1.0.1
+  - r-tidyverse=2.0.0
+  - pip:
+    - biopython
+    - matplotlib
+    - natsort
+    - numpy
+    - pandas
+    - polars
+    - scikit-learn
+    - tqdm

@@ -1,0 +1,165 @@
+---
+title: "Clustering - `r params$title`"
+date: "`r params$date`"
+output: html_document
+params:
+  date: NULL
+  title: NULL
+  settings: NULL
+  major_clusters: NULL
+  major_counts: NULL
+  shared_clusters: NULL
+  split_species: NULL
+  subcluster_figs: NULL
+  scores_fig: NULL
+  major_scores: NULL
+  sub_scores: NULL
+  args: NULL
+
+
+---
+
+<style>
+.main-container {
+    max-width: 1500px;
+    max-width: 100%;
+    max-height: 1000px;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+</style>
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+<!-- -------------------------------------------------------------------------------- -->
+# Cluster scores
+## Major clusters - silhouette scores
+
+```{r echo = FALSE, fig.align = 'center', out.width = "100"}
+htmltools::div(
+  style = "display: flex; gap: 20px; justify-content: space-between;",
+  htmltools::div(style = "flex: 1; min-width: 0", params$scores_fig$major),
+  htmltools::div(style = "width: 500px; flex: 0 0 500px;", params$major_scores)
+)
+
+``` 
+
+
+Major clustering scores are calculated using silhouette scores based on a distance matrix. The silhouette score measures how well each sequence fits within its assigned cluster compared to neighboring clusters. Scores range from –1 to +1, where values close to +1 indicate well-separated and cohesive clusters, values around 0 indicate overlapping or ambiguous assignments, and negative values suggest potential misclassification. Mean silhouette scores above 0.5 typically represent good separation, 0.25–0.5 indicate moderate clustering structure, and values below 0.25 suggest weak or no clear cluster separation.
+
+## Sub-clusters - overclustering penalty scores
+
+```{r echo = FALSE, fig.align = 'center', out.width = "100"}
+htmltools::div(
+  style = "display: flex; gap: 20px; justify-content: space-between;",
+  htmltools::div(style = "flex: 1;", params$scores_fig$sub),
+  htmltools::div(style = "width: 700px; flex: 0 0 700px;", params$sub_scores
+)
+)
+
+if (params$args$all == "False"){
+  best_text <- paste0('Major id ', params$args$best_major, ' provided the highest silhouette score.', 
+                     'The best subcluster is ', params$args$max_sub, '.')
+
+    if ((params$args$accept_sub != '')){
+      if(as.numeric(params$args$max_sub) < as.numeric( params$args$accept_sub)){
+    best_text <- paste0(best_text, ' However, ', 
+                     params$args$accept_sub, ' might be acceptable, as it is below the overclustering cut-off of ', params$args$overcluster_cutoff)
+  }
+  }
+
+} 
+
+``` 
+
+Subclustering scores are calculated using an overclustering penalty. The overclustering penalty quantifies how much a subclustering exceeds the user-defined target number of sequences to extract for each major cluster (<i>n</i>=`r params$args$numseq`). A penalty of 0 indicates that the number of subclusters is within or below the target.
+The weighted penalty score reflects the overall impact of overclustering across the dataset, giving greater weight to large clusters with many sequences. Increasing weighted scores indicate that overclustering in large clusters contributes more substantially to database expansion. Slightly positive weighted scores (e.g. 0.05–0.2) suggest minor overclustering that still achieves effective database reduction, whereas large values (>0.5) indicate strong overclustering and potential overrepresentation.
+The mean (unweighted) penalty score treats all clusters equally, regardless of size. It therefore reflects the proportion of clusters that exceed the target, providing a measure of how widespread overclustering is rather than its overall impact on database size.
+
+`r if (params$args$all == "False"){paste("<div id='best-scores' class ='section level3'> <h3>Best scores</h3> </div>")}`
+`r if (params$args$all == "False"){paste(best_text)}`
+
+
+# Clustering of database 
+```{r echo = FALSE, fig.align = 'center', out.width = "100%"}
+params$major_clusters
+
+```
+The database is clustered with `r params$args$cluster_method` with the given parameters for major clustering (see settings). The inner rings depict the species, while outer rings the clustering groups for each species. Note that more than one species can belong to the same cluster group, depending on the clustering parameters.
+
+
+### Table
+<div align='center'>
+```{r echo = FALSE, fig.align = 'center', out.width = "100%"}
+params$major_counts
+```
+</div>
+
+### Shared clusters
+<div align='center'>
+```{r echo = FALSE, fig.align = 'center', out.width = "100%"}
+params$shared_clusters
+```
+</div>
+Clusters which have more than one species in it.
+
+### Split species
+<div align='center'>
+```{r echo = FALSE, fig.align = 'center', out.width = "100%"}
+params$split_species
+```
+</div>
+Species which have been split into multiple clusters.
+
+
+
+
+# Subclustering
+```{r echo = FALSE, fig.align = 'center', out.width = "100%", results='asis', fig.keep='all'}
+sunburst_list <- params$subcluster_figs
+for (item in sunburst_list){
+  cat(str_glue("<div id='{item$name}' class ='section level2'> <h2>Major cluster {item$name}</h2>"))
+  cat(htmltools::renderTags(as.widget(item$fig_cluster))$html)
+  cat('<br></div>')
+
+  cat(str_glue("<div id='{item$name}_extraction' class ='section level3'> <h3><i>Subcluster table - {item$name}</i></h3>"))
+  cat("<div align='center'>")
+  cat(htmltools::renderTags(item$subcluster_df)$html)
+  cat('<br></div></div>')
+  
+  cat(str_glue("<div id='{item$name}_extraction' class ='section level3'> <h3><i>Reduced database - {item$name}</i></h3>"))
+  cat(htmltools::renderTags(as.widget(item$fig_extraction))$html)
+  cat('<br></div>')
+  
+  cat(str_glue("<div id='{item$name}_extraction' class ='section level3'> <h3><i>Reduced db table - {item$name}</i></h3>"))
+  cat("<div align='center'>")
+  cat(htmltools::renderTags(item$reduced_df)$html)
+  cat('<br></div></div>')
+  
+  cat('<br><br><br>')
+}
+```
+Subclustering was performed on each major cluster using `r params$args$numseq`. The top figure displays subclustering of major clusters. The reduced database is generated by trying to randomly select maximum *n* sequences (<i>n</i>=`r params$args$numseq`) from each major cluster, but minimum 1 sequence per subcluster (ergo more than *n* sequences can be selected, if there are more than *n* subclusters per major cluster). If there are less than *n* sequences per major cluster, all sequences in that cluster are chosen. 
+
+## Settings
+
+<div align='center'>
+```{r echo = FALSE, fig.align = 'center'}
+params$settings
+``` 
+</div>
+
+Overview of settings used in the pipeline.
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
