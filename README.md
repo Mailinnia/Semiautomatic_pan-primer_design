@@ -3,7 +3,7 @@ Semiautomatic pan-primer design is a semi-automated, multi-step workflow for clu
 The workflow is intended to reduce the influence of heavily represented viral groups while retaining representative sequence diversity for downstream multiple sequence alignment and broad-range primer design. It
 was developed and evaluated using _Orthoflavivirus_ and _Alphavirus_ as proof-of-concept datasets.
 
-[![DOI](https://zenodo.org/badge/1344997671.svg)](https://doi.org/10.5281/zenodo.22110655)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22110656.svg)](https://doi.org/10.5281/zenodo.22110656)
 
 ## Table of Contents
 - [Workflow overview](#overview_)
